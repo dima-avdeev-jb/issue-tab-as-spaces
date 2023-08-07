@@ -1,41 +1,40 @@
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.material.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.VisualTransformation
 
-@OptIn(ExperimentalResourceApi::class)
+const val TAB_WIDTH = 4
+
 @Composable
 fun App() {
-    MaterialTheme {
-        var greetingText by remember { mutableStateOf("Hello, World!") }
-        var showImage by remember { mutableStateOf(false) }
-        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            Button(onClick = {
-                greetingText = "Hello, ${getPlatformName()}"
-                showImage = !showImage
-            }) {
-                Text(greetingText)
-            }
-            AnimatedVisibility(showImage) {
-                Image(
-                    painterResource("compose-multiplatform.xml"),
-                    null
-                )
+    var text by remember { mutableStateOf(
+        buildString {
+            appendLine("`\t` tab")
+            appendLine("` ` space")
+        }
+    ) }
+
+    TextField(text, { text = it }, visualTransformation = VisualTransformation { original ->
+        val builder = StringBuilder()
+
+        for (offset in 0 until original.text.length) {
+            val char = original.text[offset]
+
+            if (char == '\t') {
+                for (i in 0 until TAB_WIDTH) {
+                    builder.append(' ')
+                }
+            } else {
+                builder.append(char)
             }
         }
-    }
-}
 
-expect fun getPlatformName(): String
+        TransformedText(AnnotatedString(builder.toString()), OffsetMapping.Identity)
+    })
+}
